@@ -1,0 +1,1345 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Compteur Pykur</title>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #cdb894;
+      color: #2b1609;
+    }
+
+    body.no-animations *,
+    body.no-animations *::before,
+    body.no-animations *::after {
+      animation: none !important;
+      transition: none !important;
+    }
+
+    .app {
+      width: 1000px;
+      margin: 20px auto;
+      padding: 25px;
+      background: #ead6b3;
+      border: 2px solid #a88f6c;
+      border-radius: 12px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+    }
+
+    .top {
+      display: grid;
+      grid-template-columns: 330px 1fr;
+      gap: 35px;
+      align-items: start;
+    }
+
+    .left {
+      text-align: center;
+    }
+
+    .pykur {
+      width: 300px;
+      transition: transform 0.25s, filter 0.25s;
+    }
+
+    .pykur.aura {
+      filter: drop-shadow(0 0 15px #22c55e)
+              drop-shadow(0 0 25px #facc15);
+    }
+
+    .bounce { animation: bounce 0.35s; }
+    .shake { animation: shake 0.35s; }
+    .unlock { animation: unlock 1s ease; }
+
+    @keyframes bounce {
+      0% { transform: scale(1); }
+      40% { transform: scale(1.12) translateY(-10px); }
+      100% { transform: scale(1); }
+    }
+
+    @keyframes shake {
+      0% { transform: translateX(0); }
+      25% { transform: translateX(-8px); }
+      50% { transform: translateX(8px); }
+      75% { transform: translateX(-5px); }
+      100% { transform: translateX(0); }
+    }
+
+    @keyframes unlock {
+      0% { transform: scale(1); filter: brightness(1); }
+      50% { transform: scale(1.25); filter: brightness(1.8) drop-shadow(0 0 30px gold); }
+      100% { transform: scale(1); filter: drop-shadow(0 0 15px #22c55e) drop-shadow(0 0 25px #facc15); }
+    }
+
+    .progress-title {
+      font-size: 32px;
+      font-weight: bold;
+      margin-top: 15px;
+    }
+
+    .progress-bar {
+      width: 280px;
+      height: 28px;
+      margin: 15px auto 8px;
+      background: #4d4638;
+      border-radius: 20px;
+      overflow: hidden;
+      border: 2px solid #3a3429;
+      position: relative;
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background: #39c447;
+      transition: width 0.35s, background 0.35s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .progress-fill::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: -60px;
+      width: 60px;
+      height: 100%;
+      background: rgba(255,255,255,0.35);
+      transform: skewX(-25deg);
+      animation: shine 2s infinite;
+    }
+
+    @keyframes shine {
+      0% { left: -60px; }
+      100% { left: 320px; }
+    }
+
+    .progress-percent {
+      font-size: 34px;
+      font-weight: bold;
+      color: green;
+    }
+
+    .chrono-box {
+      margin-top: 20px;
+      padding: 15px;
+      border: 2px solid #b59a73;
+      border-radius: 12px;
+      background: rgba(255,255,255,0.18);
+    }
+
+    .chrono-title {
+      font-size: 24px;
+      font-weight: bold;
+    }
+
+    .chrono-time {
+      font-size: 34px;
+      font-weight: bold;
+      color: #2563eb;
+      margin: 10px 0;
+    }
+
+    .chrono-buttons button {
+      font-size: 16px;
+      padding: 8px 12px;
+      margin: 4px;
+    }
+
+    #chronoStart { background: #16a34a; }
+    #chronoPause { background: #d97706; }
+    #chronoReset { background: #444; }
+
+    .number-pop {
+      animation: numberPop 0.25s;
+    }
+
+    @keyframes numberPop {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.25); }
+      100% { transform: scale(1); }
+    }
+
+    .header {
+      text-align: center;
+    }
+
+    h1 {
+      font-size: 60px;
+      margin: 10px 0;
+      display: inline-block;
+      vertical-align: middle;
+    }
+
+    button {
+      border: none;
+      border-radius: 10px;
+      color: white;
+      cursor: pointer;
+      font-weight: bold;
+      margin: 8px;
+      padding: 12px 25px;
+      font-size: 22px;
+      transition: transform 0.15s, filter 0.15s;
+    }
+
+    button:hover {
+      transform: scale(1.06);
+      filter: brightness(1.1);
+    }
+
+    button:active {
+      transform: scale(0.94);
+    }
+
+    #plus {
+      background: #10a832;
+      font-size: 42px;
+      width: 90px;
+      height: 75px;
+    }
+
+    #minus {
+      background: #e02020;
+      font-size: 42px;
+      width: 90px;
+      height: 75px;
+    }
+
+    #reset { background: #444; }
+    #edit { background: #d97706; }
+    #statsButton { background: #2563eb; }
+    #optionsButton { background: #7c3aed; }
+
+    .stats {
+      margin-top: 25px;
+      padding: 25px;
+      border: 2px solid #b59a73;
+      border-radius: 12px;
+      font-size: 32px;
+      font-weight: bold;
+      background: rgba(255,255,255,0.15);
+    }
+
+    .stat-line {
+      display: grid;
+      grid-template-columns: 1fr 100px 60px;
+      align-items: center;
+      margin: 22px 0;
+    }
+
+    #done {
+      color: green;
+      display: inline-block;
+    }
+
+    #remaining {
+      color: #b91c1c;
+      transition: color 0.25s;
+      display: inline-block;
+    }
+
+    #prospection {
+      color: #1264c8;
+      display: inline-block;
+    }
+
+    .prospection-img {
+      width: 55px;
+    }
+
+    hr {
+      border: none;
+      border-top: 2px solid #b59a73;
+      margin: 35px 0;
+    }
+
+    .monsters {
+      border: 2px solid #b59a73;
+      border-radius: 12px;
+      overflow: hidden;
+      font-size: 30px;
+      font-weight: bold;
+      background: rgba(255,255,255,0.12);
+    }
+
+    .monster-line {
+      display: grid;
+      grid-template-columns: 90px 1fr 80px;
+      align-items: center;
+      padding: 14px 25px;
+      border-bottom: 1px solid #c3a982;
+      transition: background 0.2s;
+    }
+
+    .monster-line:hover {
+      background: rgba(255,255,255,0.18);
+    }
+
+    .monster-line:last-child {
+      border-bottom: none;
+    }
+
+    .monster-icon {
+      width: 55px;
+      max-height: 65px;
+      object-fit: contain;
+    }
+
+    .monster-value {
+      text-align: right;
+      color: #7b430d;
+      display: inline-block;
+    }
+
+    .info {
+      margin-top: 30px;
+      text-align: center;
+      font-size: 18px;
+      font-weight: bold;
+      line-height: 1.7;
+    }
+
+    .info span {
+      color: #176de0;
+    }
+
+    #toastContainer {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .toast {
+      min-width: 320px;
+      max-width: 420px;
+      padding: 16px 22px;
+      border-radius: 12px;
+      color: white;
+      font-size: 18px;
+      font-weight: bold;
+      box-shadow: 0 8px 18px rgba(0,0,0,0.25);
+      opacity: 0;
+      transform: translateX(40px);
+      animation: toastIn 0.35s forwards;
+    }
+
+    .toast.success { background: linear-gradient(135deg, #16a34a, #22c55e); }
+    .toast.warning { background: linear-gradient(135deg, #d97706, #f59e0b); }
+    .toast.error { background: linear-gradient(135deg, #b91c1c, #ef4444); }
+    .toast.info { background: linear-gradient(135deg, #2563eb, #3b82f6); }
+
+    @keyframes toastIn {
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    @keyframes toastOut {
+      to {
+        opacity: 0;
+        transform: translateX(40px);
+      }
+    }
+
+    .modal-bg {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.55);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 9998;
+    }
+
+    .modal-bg.show {
+      display: flex;
+    }
+
+    .modal {
+      width: 650px;
+      background: #ead6b3;
+      border: 3px solid #8b6f47;
+      border-radius: 16px;
+      padding: 25px;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.4);
+      animation: modalIn 0.25s ease;
+    }
+
+    @keyframes modalIn {
+      from {
+        opacity: 0;
+        transform: scale(0.9) translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+      }
+    }
+
+    .modal h2 {
+      margin-top: 0;
+      text-align: center;
+      font-size: 42px;
+    }
+
+    .stat-card {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 15px;
+      align-items: center;
+      background: rgba(255,255,255,0.18);
+      border: 2px solid #b59a73;
+      border-radius: 12px;
+      padding: 16px 20px;
+      margin: 12px 0;
+      font-size: 24px;
+      font-weight: bold;
+    }
+
+    .stat-card strong {
+      color: #176de0;
+    }
+
+    .stat-card small {
+      font-size: 15px;
+      color: #6b4f2a;
+      font-weight: bold;
+    }
+
+    .modal-actions {
+      text-align: center;
+      margin-top: 20px;
+    }
+
+    #closeStats,
+    #closeOptions {
+      background: #444;
+    }
+
+    #editDungeonTime {
+      background: #d97706;
+      font-size: 18px;
+    }
+
+    .option-card {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: center;
+      gap: 15px;
+      background: rgba(255,255,255,0.18);
+      border: 2px solid #b59a73;
+      border-radius: 12px;
+      padding: 16px 20px;
+      margin: 12px 0;
+      font-size: 24px;
+      font-weight: bold;
+    }
+
+    .option-card small {
+      display: block;
+      font-size: 15px;
+      color: #6b4f2a;
+      margin-top: 4px;
+    }
+
+    .toggle-btn {
+      min-width: 150px;
+      font-size: 18px;
+    }
+
+    .toggle-on {
+      background: #16a34a;
+    }
+
+    .toggle-off {
+      background: #555;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div id="toastContainer"></div>
+
+  <div class="modal-bg" id="statsModal">
+    <div class="modal">
+      <h2>📊 Statistiques</h2>
+
+      <div class="stat-card">
+        <span>Temps estimé restant</span>
+        <strong id="estimatedTime">0h 00min</strong>
+      </div>
+
+      <div class="stat-card">
+        <span>Moyenne par jour</span>
+        <strong id="dailyAverage">0</strong>
+      </div>
+
+      <div class="stat-card">
+        <span>Meilleure série de jours joués</span>
+        <strong id="bestStreak">0 jour</strong>
+      </div>
+
+      <div class="stat-card">
+        <span>Session actuelle</span>
+        <strong id="currentSession">0 donjon</strong>
+      </div>
+
+      <div class="stat-card">
+        <span>
+          Temps moyen par donjon<br>
+          <small>Utilisé pour calculer le temps estimé restant</small>
+        </span>
+        <strong id="dungeonTime">10:00</strong>
+      </div>
+
+      <div class="modal-actions">
+        <button id="editDungeonTime">Modifier le temps moyen</button>
+        <button id="closeStats">Fermer</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-bg" id="optionsModal">
+    <div class="modal">
+      <h2>⚙️ Options</h2>
+
+      <div class="option-card">
+        <span>
+          Sons
+          <small>Active ou désactive les bruitages des boutons et notifications.</small>
+        </span>
+        <button id="toggleSoundOption" class="toggle-btn">Activé</button>
+      </div>
+
+      <div class="option-card">
+        <span>
+          Animations
+          <small>Active ou désactive les effets visuels, rebonds et transitions.</small>
+        </span>
+        <button id="toggleAnimationsOption" class="toggle-btn">Activées</button>
+      </div>
+
+      <div class="modal-actions">
+        <button id="closeOptions">Fermer</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="app">
+
+    <div class="top">
+
+      <div class="left">
+        <img src="./images/pykur.png" class="pykur" id="pykurImage" alt="Pykur">
+
+        <div class="progress-title">Progression :</div>
+
+        <div class="progress-bar">
+          <div class="progress-fill" id="progressFill"></div>
+        </div>
+
+        <div class="progress-percent" id="progressPercent">0.00 %</div>
+
+        <div class="chrono-box">
+          <div class="chrono-title">⏱️ Chronomètre</div>
+          <div class="chrono-time" id="chronoDisplay">00:00:00</div>
+
+          <div class="chrono-buttons">
+            <button id="chronoStart">▶ Start</button>
+            <button id="chronoPause">⏸ Pause</button>
+            <button id="chronoReset">↺ Reset</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="right">
+
+        <div class="header">
+          <button id="plus">+</button>
+          <h1>Pykur</h1>
+          <button id="minus">−</button>
+
+          <br>
+
+          <button id="reset">↻ Réinitialiser</button>
+          <button id="edit">✏️ Modifier</button>
+          <button id="statsButton">📊 Statistiques</button>
+          <button id="optionsButton">⚙️ Options</button>
+        </div>
+
+        <div class="stats">
+
+          <div class="stat-line">
+            <span>Donjons effectués :</span>
+            <span id="done">0</span>
+            <span></span>
+          </div>
+
+          <div class="stat-line">
+            <span>Donjons restants :</span>
+            <span id="remaining">640</span>
+            <span></span>
+          </div>
+
+          <div class="stat-line">
+            <span>Prospection :</span>
+            <span id="prospection">0</span>
+            <img src="./images/prospection.png" class="prospection-img" alt="Prospection">
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <hr>
+
+    <div class="monsters">
+
+      <div class="monster-line">
+        <img src="./images/chiendent.png" class="monster-icon" alt="Chiendent">
+        <span>Chiendent :</span>
+        <span class="monster-value" id="chiendent">0</span>
+      </div>
+
+      <div class="monster-line">
+        <img src="./images/nerbe.png" class="monster-icon" alt="Nerbe">
+        <span>Nerbe :</span>
+        <span class="monster-value" id="nerbe">0</span>
+      </div>
+
+      <div class="monster-line">
+        <img src="./images/fecorce.png" class="monster-icon" alt="Fécorce">
+        <span>Fécorce :</span>
+        <span class="monster-value" id="fecorce">0</span>
+      </div>
+
+      <div class="monster-line">
+        <img src="./images/abrakleur.png" class="monster-icon" alt="Abrakleur Sombre">
+        <span>Abrakleur Sombre :</span>
+        <span class="monster-value" id="abrakleur">0</span>
+      </div>
+
+      <div class="monster-line">
+        <img src="./images/bitouf.png" class="monster-icon" alt="Bitouf Sombre">
+        <span>Bitouf Sombre :</span>
+        <span class="monster-value" id="bitouf">0</span>
+      </div>
+
+      <div class="monster-line">
+        <img src="./images/floribonde.png" class="monster-icon" alt="Floribonde">
+        <span>Floribonde :</span>
+        <span class="monster-value" id="floribonde">0</span>
+      </div>
+
+    </div>
+
+    <div class="info">
+      Outil de suivi de progression pour le donjon <span>Docteur Morose</span>.<br><br>
+      Utilisez <span>+</span> pour ajouter un donjon effectué.<br>
+      Utilisez <span>−</span> pour retirer un donjon effectué.<br><br>
+      Le bouton <span>Modifier</span> permet de définir manuellement le nombre de donjons effectués.<br>
+      Le bouton <span>Réinitialiser</span> remet toute la progression à zéro.<br>
+      Le bouton <span>Statistiques</span> affiche le temps restant, la moyenne, la série de jours et la session actuelle.<br>
+      Le bouton <span>Options</span> permet d’activer ou désactiver les sons et animations.<br><br>
+      La progression est sauvegardée automatiquement après chaque action.<br><br>
+      Créé par <span>El Barto, Z'Z</span>.
+    </div>
+
+  </div>
+
+  <script>
+    let donjonsEffectues = 0;
+    const donjonsTotal = 640;
+    let ancienneProgression = 0;
+
+    let sessionActuelle = 0;
+    let tempsMoyenDonjon = 600;
+    let dateDebut = getToday();
+    let joursActifs = {};
+
+    let chronoSecondes = 0;
+    let chronoActif = false;
+    let chronoInterval = null;
+
+    let sonActive = true;
+    let animationsActivees = true;
+
+    const sons = {
+      click: new Audio("./sons/click.mp3"),
+      success: new Audio("./sons/success.mp3"),
+      error: new Audio("./sons/error.mp3"),
+      warning: new Audio("./sons/warning.mp3"),
+      unlock: new Audio("./sons/unlock.mp3")
+    };
+
+    for (const son in sons) {
+      sons[son].volume = 0.45;
+    }
+
+    const monstres = {
+      chiendent: 0,
+      nerbe: 0,
+      fecorce: 0,
+      abrakleur: 0,
+      bitouf: 0,
+      floribonde: 0
+    };
+
+    const gainsParDonjon = {
+      chiendent: 1,
+      nerbe: 1,
+      fecorce: 1,
+      abrakleur: 1,
+      bitouf: 1,
+      floribonde: 2
+    };
+
+    const paliersProspection = {
+      abrakleur: 40,
+      bitouf: 40,
+      floribonde: 40,
+      fecorce: 60,
+      chiendent: 80,
+      nerbe: 80
+    };
+
+    function getToday() {
+      return new Date().toISOString().split("T")[0];
+    }
+
+    function jouerSon(type = "click") {
+      if (!sonActive) return;
+
+      const son = sons[type];
+
+      if (!son) return;
+
+      son.currentTime = 0;
+      son.play().catch(() => {});
+    }
+
+    function updateOptionsDisplay() {
+      const soundButton = document.getElementById("toggleSoundOption");
+      const animationsButton = document.getElementById("toggleAnimationsOption");
+
+      if (sonActive) {
+        soundButton.textContent = "Activé";
+        soundButton.className = "toggle-btn toggle-on";
+      } else {
+        soundButton.textContent = "Désactivé";
+        soundButton.className = "toggle-btn toggle-off";
+      }
+
+      if (animationsActivees) {
+        animationsButton.textContent = "Activées";
+        animationsButton.className = "toggle-btn toggle-on";
+        document.body.classList.remove("no-animations");
+      } else {
+        animationsButton.textContent = "Désactivées";
+        animationsButton.className = "toggle-btn toggle-off";
+        document.body.classList.add("no-animations");
+      }
+    }
+
+    function toggleSon() {
+      sonActive = !sonActive;
+      sauvegarder();
+      updateOptionsDisplay();
+
+      if (sonActive) {
+        jouerSon("click");
+        showToast("Sons activés.", "info", null);
+      } else {
+        showToast("Sons désactivés.", "info", null);
+      }
+    }
+
+    function toggleAnimations() {
+      jouerSon("click");
+
+      animationsActivees = !animationsActivees;
+      sauvegarder();
+      updateOptionsDisplay();
+
+      if (animationsActivees) {
+        showToast("Animations activées.", "info");
+      } else {
+        showToast("Animations désactivées.", "info");
+      }
+    }
+
+    function daysBetween(date1, date2) {
+      const d1 = new Date(date1);
+      const d2 = new Date(date2);
+      const diff = d2 - d1;
+      return Math.max(1, Math.floor(diff / 86400000) + 1);
+    }
+
+    function ajouterAuJour(delta) {
+      const today = getToday();
+
+      if (!joursActifs[today]) {
+        joursActifs[today] = 0;
+      }
+
+      joursActifs[today] += delta;
+
+      if (joursActifs[today] < 0) {
+        joursActifs[today] = 0;
+      }
+    }
+
+    function calculerMeilleurStreak() {
+      const dates = Object.keys(joursActifs)
+        .filter(date => joursActifs[date] > 0)
+        .sort();
+
+      if (dates.length === 0) return 0;
+
+      let best = 1;
+      let current = 1;
+
+      for (let i = 1; i < dates.length; i++) {
+        const previous = new Date(dates[i - 1]);
+        const currentDate = new Date(dates[i]);
+        const diff = Math.floor((currentDate - previous) / 86400000);
+
+        if (diff === 1) {
+          current++;
+          best = Math.max(best, current);
+        } else {
+          current = 1;
+        }
+      }
+
+      return best;
+    }
+
+    function formatDureeSecondes(totalSecondes) {
+      const h = Math.floor(totalSecondes / 3600);
+      const m = Math.floor((totalSecondes % 3600) / 60);
+      const s = totalSecondes % 60;
+
+      if (h > 0) {
+        return `${h}h ${String(m).padStart(2, "0")}min`;
+      }
+
+      if (m > 0) {
+        return `${m}min ${String(s).padStart(2, "0")}s`;
+      }
+
+      return `${s}s`;
+    }
+
+    function formatTempsMoyen() {
+      const minutes = Math.floor(tempsMoyenDonjon / 60);
+      const secondes = tempsMoyenDonjon % 60;
+
+      return `${minutes}:${String(secondes).padStart(2, "0")}`;
+    }
+
+    function formatChrono(secondes) {
+      const h = Math.floor(secondes / 3600);
+      const m = Math.floor((secondes % 3600) / 60);
+      const s = secondes % 60;
+
+      return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+    }
+
+    function calculerProspection() {
+      let total = 0;
+
+      for (const monstre in monstres) {
+        total += Math.floor(monstres[monstre] / paliersProspection[monstre]);
+      }
+
+      return total;
+    }
+
+    function getCouleurProgression(progression) {
+      if (progression >= 100) return "#064e1f";
+      if (progression >= 75) return "#166534";
+      if (progression >= 50) return "#15803d";
+      if (progression >= 25) return "#22c55e";
+      return "#39c447";
+    }
+
+    function getCouleurDonjonsRestants(progression) {
+      if (progression >= 100) return "#064e1f";
+      if (progression >= 75) return "#15803d";
+      if (progression >= 50) return "#65a30d";
+      if (progression >= 25) return "#d97706";
+      return "#b91c1c";
+    }
+
+    function showToast(message, type = "success", son = type) {
+      if (son) {
+        jouerSon(son);
+      }
+
+      const container = document.getElementById("toastContainer");
+      const toast = document.createElement("div");
+
+      toast.className = `toast ${type}`;
+      toast.textContent = message;
+
+      container.appendChild(toast);
+
+      setTimeout(() => {
+        toast.style.animation = "toastOut 0.35s forwards";
+
+        setTimeout(() => {
+          toast.remove();
+        }, 350);
+      }, 3200);
+    }
+
+    function verifierPalier(ancienne, nouvelle) {
+      const paliers = [25, 50, 75, 100];
+
+      for (const palier of paliers) {
+        if (ancienne < palier && nouvelle >= palier) {
+          if (palier === 25) showToast("🎉 25 % atteint ! Bon début, continue !", "success");
+          if (palier === 50) showToast("🔥 50 % atteint ! La moitié est faite !", "success");
+          if (palier === 75) showToast("⚡ 75 % atteint ! Tu approches du but !", "success");
+          if (palier === 100) showToast("🏆 100 % terminé ! Aurapykur débloqué !", "success", "unlock");
+        }
+      }
+    }
+
+    function sauvegarder() {
+      localStorage.setItem("pykurData", JSON.stringify({
+        donjonsEffectues,
+        monstres,
+        tempsMoyenDonjon,
+        dateDebut,
+        joursActifs,
+        chronoSecondes,
+        sonActive,
+        animationsActivees
+      }));
+    }
+
+    function charger() {
+      const data = localStorage.getItem("pykurData");
+
+      if (!data) return;
+
+      const parsed = JSON.parse(data);
+
+      donjonsEffectues = parsed.donjonsEffectues || 0;
+      tempsMoyenDonjon = parsed.tempsMoyenDonjon || 600;
+      dateDebut = parsed.dateDebut || getToday();
+      joursActifs = parsed.joursActifs || {};
+      chronoSecondes = parsed.chronoSecondes || 0;
+      sonActive = parsed.sonActive !== false;
+      animationsActivees = parsed.animationsActivees !== false;
+
+      for (const monstre in monstres) {
+        monstres[monstre] = parsed.monstres?.[monstre] || 0;
+      }
+    }
+
+    function animerElement(id) {
+      if (!animationsActivees) return;
+
+      const element = document.getElementById(id);
+
+      element.classList.remove("number-pop");
+      void element.offsetWidth;
+      element.classList.add("number-pop");
+    }
+
+    function animerNombres() {
+      if (!animationsActivees) return;
+
+      animerElement("done");
+      animerElement("remaining");
+      animerElement("prospection");
+      animerElement("progressPercent");
+
+      for (const monstre in monstres) {
+        animerElement(monstre);
+      }
+    }
+
+    function animerPykur(type) {
+      if (!animationsActivees) return;
+
+      const image = document.getElementById("pykurImage");
+
+      image.classList.remove("bounce", "shake", "unlock");
+      void image.offsetWidth;
+      image.classList.add(type);
+
+      setTimeout(() => {
+        image.classList.remove(type);
+      }, 1000);
+    }
+
+    function updateChronoDisplay() {
+      const time = formatChrono(chronoSecondes);
+      document.getElementById("chronoDisplay").textContent = time;
+    }
+
+    function startChrono() {
+      jouerSon("click");
+
+      if (chronoActif) {
+        showToast("Le chronomètre est déjà lancé.", "info");
+        return;
+      }
+
+      chronoActif = true;
+
+      chronoInterval = setInterval(() => {
+        chronoSecondes++;
+        updateChronoDisplay();
+
+        if (chronoSecondes % 10 === 0) {
+          sauvegarder();
+        }
+      }, 1000);
+
+      showToast("Chronomètre lancé.", "success");
+    }
+
+    function pauseChrono() {
+      jouerSon("click");
+
+      if (!chronoActif) {
+        showToast("Le chronomètre est déjà en pause.", "info");
+        return;
+      }
+
+      chronoActif = false;
+      clearInterval(chronoInterval);
+      sauvegarder();
+
+      showToast("Chronomètre mis en pause.", "info");
+    }
+
+    function resetChrono() {
+      jouerSon("click");
+
+      chronoActif = false;
+      clearInterval(chronoInterval);
+
+      chronoSecondes = 0;
+
+      updateChronoDisplay();
+      sauvegarder();
+
+      showToast("Chronomètre réinitialisé.", "warning");
+    }
+
+    function updateDisplay(avecPopup = false, avecAnimation = false) {
+      const donjonsRestants = donjonsTotal - donjonsEffectues;
+      const progression = (donjonsEffectues / donjonsTotal) * 100;
+
+      document.getElementById("done").textContent = donjonsEffectues;
+      document.getElementById("remaining").textContent = donjonsRestants;
+      document.getElementById("prospection").textContent = calculerProspection();
+
+      document.getElementById("progressFill").style.width = progression + "%";
+      document.getElementById("progressFill").style.background = getCouleurProgression(progression);
+
+      document.getElementById("progressPercent").textContent = progression.toFixed(2) + " %";
+      document.getElementById("progressPercent").style.color = getCouleurProgression(progression);
+
+      document.getElementById("remaining").style.color = getCouleurDonjonsRestants(progression);
+
+      const pykurImage = document.getElementById("pykurImage");
+
+      if (progression >= 100) {
+        if (!pykurImage.src.includes("aurapykur.png")) {
+          pykurImage.src = "./images/aurapykur.png";
+          animerPykur("unlock");
+        }
+
+        pykurImage.classList.add("aura");
+      } else {
+        pykurImage.src = "./images/pykur.png";
+        pykurImage.classList.remove("aura");
+      }
+
+      for (const monstre in monstres) {
+        document.getElementById(monstre).textContent = monstres[monstre];
+      }
+
+      if (avecAnimation) {
+        animerNombres();
+      }
+
+      if (avecPopup) {
+        verifierPalier(ancienneProgression, progression);
+      }
+
+      ancienneProgression = progression;
+
+      updateStatsDisplay();
+      updateChronoDisplay();
+    }
+
+    function updateStatsDisplay() {
+      const donjonsRestants = donjonsTotal - donjonsEffectues;
+      const tempsRestantSecondes = donjonsRestants * tempsMoyenDonjon;
+      const joursDepuisDebut = daysBetween(dateDebut, getToday());
+      const moyenneJour = donjonsEffectues / joursDepuisDebut;
+      const meilleurStreak = calculerMeilleurStreak();
+
+      document.getElementById("estimatedTime").textContent = formatDureeSecondes(tempsRestantSecondes);
+      document.getElementById("dailyAverage").textContent = moyenneJour.toFixed(1) + " donjon / jour";
+      document.getElementById("bestStreak").textContent = meilleurStreak + (meilleurStreak > 1 ? " jours" : " jour");
+      document.getElementById("currentSession").textContent = sessionActuelle + (sessionActuelle > 1 ? " donjons" : " donjon");
+      document.getElementById("dungeonTime").textContent = formatTempsMoyen();
+    }
+
+    function recalculerMonstresDepuisDonjons() {
+      for (const monstre in monstres) {
+        monstres[monstre] = donjonsEffectues * gainsParDonjon[monstre];
+      }
+    }
+
+    function reinitialiser() {
+      jouerSon("click");
+
+      const confirmation = confirm("Tu veux vraiment tout remettre à zéro ?");
+
+      if (!confirmation) {
+        showToast("Réinitialisation annulée.", "info");
+        return;
+      }
+
+      donjonsEffectues = 0;
+      sessionActuelle = 0;
+      dateDebut = getToday();
+      joursActifs = {};
+      chronoSecondes = 0;
+
+      chronoActif = false;
+      clearInterval(chronoInterval);
+
+      recalculerMonstresDepuisDonjons();
+
+      sauvegarder();
+      updateDisplay(false, true);
+      animerPykur("shake");
+
+      showToast("Progression, statistiques et chronomètre réinitialisés.", "warning");
+    }
+
+    function modifierManuellement() {
+      jouerSon("click");
+
+      const valeur = prompt(
+        "Entre le nombre de donjons effectués :",
+        donjonsEffectues
+      );
+
+      if (valeur === null) {
+        showToast("Modification annulée.", "info");
+        return;
+      }
+
+      const nouveauTotal = Number(valeur);
+
+      if (!Number.isInteger(nouveauTotal) || nouveauTotal < 0 || nouveauTotal > donjonsTotal) {
+        showToast("Nombre invalide. Mets un nombre entre 0 et 640.", "error");
+        return;
+      }
+
+      const difference = nouveauTotal - donjonsEffectues;
+
+      donjonsEffectues = nouveauTotal;
+      sessionActuelle += difference;
+
+      if (sessionActuelle < 0) {
+        sessionActuelle = 0;
+      }
+
+      ajouterAuJour(difference);
+      recalculerMonstresDepuisDonjons();
+
+      updateDisplay(true, true);
+      sauvegarder();
+
+      showToast("Progression modifiée automatiquement.", "info");
+    }
+
+    function modifierTempsMoyen() {
+      jouerSon("click");
+
+      const valeur = prompt(
+        "Temps moyen par donjon\n\nFormat accepté : mm:ss ou minutes\nExemples : 2:05, 10:30, 5",
+        formatTempsMoyen()
+      );
+
+      if (valeur === null) {
+        showToast("Modification du temps annulée.", "info");
+        return;
+      }
+
+      let totalSecondes = 0;
+
+      if (valeur.includes(":")) {
+        const morceaux = valeur.split(":");
+
+        if (morceaux.length !== 2) {
+          showToast("Format invalide. Utilise mm:ss", "error");
+          return;
+        }
+
+        const minutes = Number(morceaux[0]);
+        const secondes = Number(morceaux[1]);
+
+        if (
+          isNaN(minutes) ||
+          isNaN(secondes) ||
+          minutes < 0 ||
+          secondes < 0 ||
+          secondes >= 60
+        ) {
+          showToast("Temps invalide.", "error");
+          return;
+        }
+
+        totalSecondes = (minutes * 60) + secondes;
+
+      } else {
+        const minutes = Number(valeur);
+
+        if (isNaN(minutes) || minutes <= 0) {
+          showToast("Temps invalide.", "error");
+          return;
+        }
+
+        totalSecondes = Math.floor(minutes * 60);
+      }
+
+      if (totalSecondes <= 0) {
+        showToast("Le temps doit être supérieur à 0.", "error");
+        return;
+      }
+
+      tempsMoyenDonjon = totalSecondes;
+
+      sauvegarder();
+      updateStatsDisplay();
+
+      showToast("Temps moyen mis à jour.", "info");
+    }
+
+    document.getElementById("plus").addEventListener("click", () => {
+      jouerSon("click");
+
+      if (donjonsEffectues >= donjonsTotal) {
+        showToast("Objectif déjà terminé : 640 donjons effectués.", "info");
+        return;
+      }
+
+      donjonsEffectues++;
+      sessionActuelle++;
+      ajouterAuJour(1);
+
+      for (const monstre in monstres) {
+        monstres[monstre] += gainsParDonjon[monstre];
+      }
+
+      animerPykur("bounce");
+      updateDisplay(true, true);
+      sauvegarder();
+    });
+
+    document.getElementById("minus").addEventListener("click", () => {
+      jouerSon("click");
+
+      if (donjonsEffectues <= 0) {
+        showToast("Impossible de descendre sous 0 donjon.", "error");
+        return;
+      }
+
+      donjonsEffectues--;
+      sessionActuelle--;
+
+      if (sessionActuelle < 0) {
+        sessionActuelle = 0;
+      }
+
+      ajouterAuJour(-1);
+
+      for (const monstre in monstres) {
+        monstres[monstre] -= gainsParDonjon[monstre];
+      }
+
+      animerPykur("shake");
+      updateDisplay(false, true);
+      sauvegarder();
+    });
+
+    document.getElementById("reset").addEventListener("click", reinitialiser);
+    document.getElementById("edit").addEventListener("click", modifierManuellement);
+    document.getElementById("editDungeonTime").addEventListener("click", modifierTempsMoyen);
+
+    document.getElementById("chronoStart").addEventListener("click", startChrono);
+    document.getElementById("chronoPause").addEventListener("click", pauseChrono);
+    document.getElementById("chronoReset").addEventListener("click", resetChrono);
+
+    document.getElementById("statsButton").addEventListener("click", () => {
+      jouerSon("click");
+      updateStatsDisplay();
+      document.getElementById("statsModal").classList.add("show");
+    });
+
+    document.getElementById("closeStats").addEventListener("click", () => {
+      jouerSon("click");
+      document.getElementById("statsModal").classList.remove("show");
+    });
+
+    document.getElementById("statsModal").addEventListener("click", (event) => {
+      if (event.target.id === "statsModal") {
+        jouerSon("click");
+        document.getElementById("statsModal").classList.remove("show");
+      }
+    });
+
+    document.getElementById("optionsButton").addEventListener("click", () => {
+      jouerSon("click");
+      updateOptionsDisplay();
+      document.getElementById("optionsModal").classList.add("show");
+    });
+
+    document.getElementById("closeOptions").addEventListener("click", () => {
+      jouerSon("click");
+      document.getElementById("optionsModal").classList.remove("show");
+    });
+
+    document.getElementById("optionsModal").addEventListener("click", (event) => {
+      if (event.target.id === "optionsModal") {
+        jouerSon("click");
+        document.getElementById("optionsModal").classList.remove("show");
+      }
+    });
+
+    document.getElementById("toggleSoundOption").addEventListener("click", toggleSon);
+    document.getElementById("toggleAnimationsOption").addEventListener("click", toggleAnimations);
+
+    charger();
+    updateOptionsDisplay();
+    updateDisplay();
+  </script>
+
+</body>
+</html>
