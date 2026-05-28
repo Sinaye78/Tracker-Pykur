@@ -1,18 +1,10 @@
-Traceback (most recent call last):
-  File "<frozen runpy>", line 198, in _run_module_as_main
-  File "<frozen runpy>", line 88, in _run_code
-  File "C:\Users\kephr\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\Lib\http\server.py", line 1329, in <module>
-    test(
-  File "C:\Users\kephr\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\Lib\http\server.py", line 1276, in test
-    with ServerClass(addr, HandlerClass) as httpd:
-         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\kephr\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\Lib\socketserver.py", line 457, in __init__
-    self.server_bind()
-  File "C:\Users\kephr\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\Lib\http\server.py", line 1323, in server_bind
-    return super().server_bind()
-           ^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\kephr\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\Lib\http\server.py", line 140, in server_bind
-    socketserver.TCPServer.server_bind(self)
-  File "C:\Users\kephr\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\Lib\socketserver.py", line 478, in server_bind
-    self.socket.bind(self.server_address)
-PermissionError: [WinError 10013] Une tentative d’accès à un socket de manière interdite par ses autorisations d’accès a été tentée
+127.0.0.1 - - [28/May/2026 15:06:29] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [28/May/2026 15:06:41] "GET /mobile.html?view=mobile HTTP/1.1" 200 -
+127.0.0.1 - - [28/May/2026 15:06:41] "GET /index.html?view=desktop HTTP/1.1" 200 -
+127.0.0.1 - - [28/May/2026 15:07:34] "GET /mobile.html?view=mobile HTTP/1.1" 200 -
+127.0.0.1 - - [28/May/2026 15:07:34] "GET /index.html?view=desktop HTTP/1.1" 200 -
+127.0.0.1 - - [28/May/2026 15:12:15] "GET /index.html?view=desktop HTTP/1.1" 200 -
+127.0.0.1 - - [28/May/2026 15:12:23] "GET /mobile.html?view=mobile HTTP/1.1" 200 -
+127.0.0.1 - - [28/May/2026 15:14:09] "GET /index.html?view=desktop HTTP/1.1" 200 -
+127.0.0.1 - - [28/May/2026 15:18:36] "GET /index.html?view=desktop HTTP/1.1" 200 -
+127.0.0.1 - - [28/May/2026 15:24:11] "GET /mobile.html?view=mobile HTTP/1.1" 200 -
